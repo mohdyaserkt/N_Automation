@@ -227,18 +227,18 @@ def naukriLogin(headless=False):
             #     GetElement(driver, skip_locator, "XPATH").click()
 
             # CheckPoint to verify login
-            # if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=40):
-            #     CheckPoint = GetElement(driver, "nI-gNb-icon-img", locator="CLASS")
-            #     if CheckPoint:
-            #         log_msg("Naukri Login Successful")
-            #         status = True
-            #         return (status, driver)
-            #     else:
-            #         log_msg("Unknown Login Error")
-            #         return (status, driver)
-            # else:
-            #     log_msg("Unknown Login Error")
-            #     return (status, driver)
+            if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=40):
+                CheckPoint = GetElement(driver, "nI-gNb-icon-img", locator="CLASS")
+                if CheckPoint:
+                    log_msg("Naukri Login Successful")
+                    status = True
+                    return (status, driver)
+                else:
+                    log_msg("Unknown Login Error")
+                    return (status, driver)
+            else:
+                log_msg("Unknown Login Error")
+                return (status, driver)
 
     except Exception as e:
         catch(e)
