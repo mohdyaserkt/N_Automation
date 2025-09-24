@@ -23,7 +23,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support import expected_conditions as EC
 import constants
-
+import chromedriver_autoinstaller
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 # Add folder Path of your resume
 originalResumePath = constants.ORIGINAL_RESUME_PATH
 # Add Path where modified resume should be saved
@@ -154,21 +156,28 @@ def tearDown(driver):
 def randomText():
     return "".join(choice(ascii_uppercase + digits) for _ in range(randint(1, 5)))
 
+def LoadNaukri(headless=True):
+   
 
-def LoadNaukri(headless):
+    # Install matching chromedriver
+    chromedriver_autoinstaller.install()
+
     options = webdriver.ChromeOptions()
     options.add_argument("--disable-notifications")
-    options.add_argument("--start-maximized")
     options.add_argument("--disable-popups")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-popup-blocking")
+    
     if headless:
-        options.add_argument("--headless=new")   # use new headless mode
+        options.add_argument("--headless=new")   
         options.add_argument("--window-size=1920,1080")
-
-    # 🟢 Pretend to be a real browser
+    
+    # Pretend to be a real browser
     options.add_argument(
         "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -176,10 +185,20 @@ def LoadNaukri(headless):
     )
 
     driver = webdriver.Chrome(options=options, service=ChromeService())
+
+    # Hide webdriver property
+    driver.execute_cdp_cmd(
+        "Page.addScriptToEvaluateOnNewDocument",
+        {
+            "source": """
+                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            """
+        },
+    )
+
     driver.implicitly_wait(5)
     driver.get(NaukriURL)
     return driver
-
 
 
 def naukriLogin(headless=False):
@@ -217,7 +236,7 @@ def naukriLogin(headless=False):
             passFieldElement.send_keys(password)
             time.sleep(1)
             loginButton.send_keys(Keys.ENTER)
-            time.sleep(13)
+            time.sleep(3)
 
             # Added click to Skip button
             # print("Checking Skip button")
