@@ -1,9 +1,10 @@
 name: Naukri Auto Update
 
+# Trigger every hour and allow manual run
 on:
   schedule:
-    - cron: "0 * * * *"   # every hour
-  workflow_dispatch:      # allow manual trigger
+    - cron: "0 * * * *"   # runs at the start of every hour
+  workflow_dispatch:      # manual trigger
 
 jobs:
   run-naukri:
@@ -18,21 +19,32 @@ jobs:
       NAUKRI_PROFILE_URL: ${{ secrets.NAUKRI_PROFILE_URL }}
 
     steps:
+      # Step 1: Checkout repo
       - uses: actions/checkout@v3
 
+      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install Chrome & Chromedriver
+      # Step 3: Install dependencies
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt chromedriver-autoinstaller
+
+      # Step 4: Install Google Chrome
+      - name: Install Google Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable chromium-chromedriver
-          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
+          sudo apt-get install -y wget unzip xvfb libxi6 libgconf-2-4 \
+            default-jdk default-jre fonts-liberation libappindicator3-1 \
+            libasound2 libatk-bridge2.0-0 libcups2 libdbus-1-3 libxss1 \
+            libxtst6 lsb-release libnss3 libx11-xcb1 libxcomposite1 libxdamage1 \
+            libxrandr2 libgbm1
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y ./google-chrome-stable_current_amd64.deb
+          google-chrome --version
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run script
+      # Step 5: Run your Selenium script
+      - name: Run Naukri script
         run: python naukri.py
