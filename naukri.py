@@ -217,7 +217,7 @@ def naukriLogin(headless=False):
             passFieldElement.send_keys(password)
             time.sleep(1)
             loginButton.send_keys(Keys.ENTER)
-            time.sleep(3)
+            time.sleep(13)
 
             # Added click to Skip button
             # print("Checking Skip button")
