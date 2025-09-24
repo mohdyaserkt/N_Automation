@@ -1,0 +1,38 @@
+name: Naukri Auto Update
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:      # allow manual trigger
+
+jobs:
+  run-naukri:
+    runs-on: ubuntu-latest
+    env:
+      USERNAME: ${{ secrets.USERNAME }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      MOBILE: ${{ secrets.MOBILE }}
+      ORIGINAL_RESUME_PATH: ${{ secrets.ORIGINAL_RESUME_PATH }}
+      MODIFIED_RESUME_PATH: ${{ secrets.MODIFIED_RESUME_PATH }}
+      NAUKRI_LOGIN_URL: ${{ secrets.NAUKRI_LOGIN_URL }}
+      NAUKRI_PROFILE_URL: ${{ secrets.NAUKRI_PROFILE_URL }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Chrome & Chromedriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable chromium-chromedriver
+          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run script
+        run: python naukri.py
