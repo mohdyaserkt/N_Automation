@@ -55,7 +55,7 @@ jobs:
 
       # Step 7: Upload screenshot for debugging
       - name: Upload login screenshot
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: login-screenshot
           path: /github/workspace/login_debug.png
