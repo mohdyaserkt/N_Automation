@@ -240,6 +240,7 @@ def naukriLogin(headless=True):
             WebDriverWait(driver, 30).until(
                 lambda d: d.execute_script("return document.readyState") == "complete"
             )
+            time.sleep(60)
 
             # Save screenshot after page fully loaded
             screenshot_path = os.path.join(os.getcwd(), "login_debug.png")  # current folder in GitHub Actions
