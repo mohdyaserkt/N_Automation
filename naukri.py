@@ -156,28 +156,21 @@ def tearDown(driver):
 def randomText():
     return "".join(choice(ascii_uppercase + digits) for _ in range(randint(1, 5)))
 
-def LoadNaukri(headless=True):
-   
 
-    # Install matching chromedriver
-    chromedriver_autoinstaller.install()
-
+def LoadNaukri(headless):
     options = webdriver.ChromeOptions()
     options.add_argument("--disable-notifications")
+    options.add_argument("--start-maximized")
     options.add_argument("--disable-popups")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-popup-blocking")
-    
+
     if headless:
-        options.add_argument("--headless=new")   
+        options.add_argument("--headless=new")   # use new headless mode
         options.add_argument("--window-size=1920,1080")
-    
-    # Pretend to be a real browser
+
+    # 🟢 Pretend to be a real browser
     options.add_argument(
         "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -185,20 +178,10 @@ def LoadNaukri(headless=True):
     )
 
     driver = webdriver.Chrome(options=options, service=ChromeService())
-
-    # Hide webdriver property
-    driver.execute_cdp_cmd(
-        "Page.addScriptToEvaluateOnNewDocument",
-        {
-            "source": """
-                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-            """
-        },
-    )
-
     driver.implicitly_wait(5)
     driver.get(NaukriURL)
     return driver
+
 
 
 def naukriLogin(headless=False):
@@ -229,7 +212,10 @@ def naukriLogin(headless=False):
             log_msg("None of the elements found to login.")
 
         if emailFieldElement is not None:
+            print("p-1")
             emailFieldElement.clear()
+            print(username)
+            print(password)
             emailFieldElement.send_keys(username)
             time.sleep(1)
             passFieldElement.clear()
@@ -246,8 +232,12 @@ def naukriLogin(headless=False):
             #     GetElement(driver, skip_locator, "XPATH").click()
 
             # CheckPoint to verify login
+            print("p-2")
+
             if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=40):
                 CheckPoint = GetElement(driver, "nI-gNb-icon-img", locator="CLASS")
+                print("p-3")
+
                 if CheckPoint:
                     log_msg("Naukri Login Successful")
                     status = True
