@@ -183,9 +183,8 @@ def LoadNaukri(headless):
     return driver
 
 
-
-def naukriLogin(headless=False):
-    """Open Chrome browser and Login to Naukri.com"""
+def naukriLogin(headless=True):
+    """Open Chrome browser and Login to Naukri.com (for GitHub Actions)"""
     status = False
     driver = None
     username_locator = "usernameField"
@@ -218,24 +217,23 @@ def naukriLogin(headless=False):
             print(f"passwor is set with length {len(password)}")
             
             emailFieldElement.send_keys(username)
-            time.sleep(1)
+            time.sleep(2)
             passFieldElement.clear()
             passFieldElement.send_keys(password)
-            time.sleep(1)
+            time.sleep(2)
             loginButton.send_keys(Keys.ENTER)
-            time.sleep(3)
 
-            # Added click to Skip button
-            # print("Checking Skip button")
-            # if WaitTillElementPresent(driver, close_locator, "XPATH", 10):
-            #     GetElement(driver, close_locator, "XPATH").click()
-            # if WaitTillElementPresent(driver, skip_locator, "XPATH", 5):
-            #     GetElement(driver, skip_locator, "XPATH").click()
+            # Wait longer on GitHub runner for page to load
+            time.sleep(7)
+
+            # Save screenshot in GitHub Actions workspace
+            screenshot_path = "/github/workspace/login_debug.png"
+            driver.save_screenshot(screenshot_path)
+            print(f"Screenshot saved at {screenshot_path}")
 
             # CheckPoint to verify login
             print("p-2")
-
-            if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=40):
+            if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=50):
                 CheckPoint = GetElement(driver, "nI-gNb-icon-img", locator="CLASS")
                 print("p-3")
 
@@ -253,6 +251,7 @@ def naukriLogin(headless=False):
     except Exception as e:
         catch(e)
     return (status, driver)
+
 
 def UpdateProfile(driver):
     try:

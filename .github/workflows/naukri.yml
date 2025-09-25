@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.9"
 
-      # Step 3: Install dependencies
+      # Step 3: Install Python dependencies
       - name: Install Python dependencies
         run: pip install -r requirements.txt chromedriver-autoinstaller
 
@@ -43,6 +43,19 @@ jobs:
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
           google-chrome --version
 
-      # Step 5: Run your Selenium script
+      # Step 5: Start virtual display for headless Chrome
+      - name: Start X virtual framebuffer
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+
+      # Step 6: Run your Selenium script
       - name: Run Naukri script
         run: python naukri.py
+
+      # Step 7: Upload screenshot for debugging
+      - name: Upload login screenshot
+        uses: actions/upload-artifact@v3
+        with:
+          name: login-screenshot
+          path: /github/workspace/login_debug.png
