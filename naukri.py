@@ -214,8 +214,9 @@ def naukriLogin(headless=False):
         if emailFieldElement is not None:
             print("p-1")
             emailFieldElement.clear()
-            print(username)
-            print(password)
+            print(f"USERNAME is set with length {len(username)}")
+            print(f"passwor is set with length {len(password)}")
+            
             emailFieldElement.send_keys(username)
             time.sleep(1)
             passFieldElement.clear()
