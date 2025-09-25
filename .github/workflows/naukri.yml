@@ -1,10 +1,9 @@
 name: Naukri Auto Update
 
-# Trigger every hour and allow manual run
 on:
   schedule:
-    - cron: "0 * * * *"   # runs at the start of every hour
-  workflow_dispatch:      # manual trigger
+    - cron: "0 * * * *"
+  workflow_dispatch:
 
 jobs:
   run-naukri:
@@ -17,22 +16,19 @@ jobs:
       MODIFIED_RESUME_PATH: ${{ secrets.MODIFIED_RESUME_PATH }}
       NAUKRI_LOGIN_URL: ${{ secrets.NAUKRI_LOGIN_URL }}
       NAUKRI_PROFILE_URL: ${{ secrets.NAUKRI_PROFILE_URL }}
+      DISPLAY: :99
 
     steps:
-      # Step 1: Checkout repo
       - uses: actions/checkout@v3
 
-      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      # Step 3: Install Python dependencies
       - name: Install Python dependencies
         run: pip install -r requirements.txt chromedriver-autoinstaller
 
-      # Step 4: Install Google Chrome (fixed packages)
       - name: Install Google Chrome
         run: |
           sudo apt-get update
@@ -43,17 +39,12 @@ jobs:
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
           google-chrome --version
 
-      # Step 5: Start virtual display for headless Chrome
       - name: Start X virtual framebuffer
-        run: |
-          Xvfb :99 -screen 0 1920x1080x24 &
-          export DISPLAY=:99
+        run: Xvfb :99 -screen 0 1920x1080x24 &
 
-      # Step 6: Run your Selenium script
       - name: Run Naukri script
         run: python naukri.py
 
-      # Step 7: Upload screenshot for debugging
       - name: Upload login screenshot
         uses: actions/upload-artifact@v4
         with:

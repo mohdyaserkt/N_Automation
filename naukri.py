@@ -156,30 +156,45 @@ def tearDown(driver):
 def randomText():
     return "".join(choice(ascii_uppercase + digits) for _ in range(randint(1, 5)))
 
-
-def LoadNaukri(headless):
+def LoadNaukri(headless=True):
+    """Initialize Chrome WebDriver for Naukri.com, optimized for GitHub Actions."""
     options = webdriver.ChromeOptions()
+    
+    # Common options
     options.add_argument("--disable-notifications")
     options.add_argument("--start-maximized")
     options.add_argument("--disable-popups")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-
+    
+    # Headless mode for CI
     if headless:
-        options.add_argument("--headless=new")   # use new headless mode
+        options.add_argument("--headless=new")
         options.add_argument("--window-size=1920,1080")
-
-    # 🟢 Pretend to be a real browser
+    
+    # Pretend to be a real browser
     options.add_argument(
         "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/116.0.0.0 Safari/537.36"
     )
-
+    
+    # Initialize Chrome driver
     driver = webdriver.Chrome(options=options, service=ChromeService())
+    
+    # Wait implicitly for elements
     driver.implicitly_wait(5)
+    
+    # Open Naukri login page
     driver.get(NaukriURL)
+    
+    # Ensure page loaded completely
+    WebDriverWait(driver, 30).until(
+        lambda d: d.execute_script("return document.readyState") == "complete"
+    )
+    
+    log_msg("Naukri page loaded successfully")
     return driver
 
 
@@ -190,8 +205,6 @@ def naukriLogin(headless=True):
     username_locator = "usernameField"
     password_locator = "passwordField"
     login_btn_locator = "//*[@type='submit' and normalize-space()='Login']"
-    skip_locator = "//*[text() = 'SKIP AND CONTINUE']"
-    close_locator = "//*[contains(@class, 'cross-icon') or @alt='cross-icon']"
 
     try:
         driver = LoadNaukri(headless)
@@ -200,57 +213,55 @@ def naukriLogin(headless=True):
         if "naukri.com" in driver.title.lower():
             log_msg("Website Loaded Successfully.")
 
-        emailFieldElement = None
-        if is_element_present(driver, By.ID, username_locator):
-            emailFieldElement = GetElement(driver, username_locator, locator="ID")
-            time.sleep(1)
-            passFieldElement = GetElement(driver, password_locator, locator="ID")
-            time.sleep(1)
-            loginButton = GetElement(driver, login_btn_locator, locator="XPATH")
-        else:
-            log_msg("None of the elements found to login.")
+        # Wait for the username field to appear
+        try:
+            emailFieldElement = WebDriverWait(driver, 20).until(
+                lambda d: d.find_element(By.ID, username_locator)
+            )
+        except Exception:
+            log_msg("Username field not found!")
+            emailFieldElement = None
 
-        if emailFieldElement is not None:
+        if emailFieldElement:
             print("p-1")
             emailFieldElement.clear()
             print(f"USERNAME is set with length {len(username)}")
             print(f"passwor is set with length {len(password)}")
-            
+
             emailFieldElement.send_keys(username)
-            time.sleep(2)
+            passFieldElement = driver.find_element(By.ID, password_locator)
             passFieldElement.clear()
             passFieldElement.send_keys(password)
-            time.sleep(2)
+
+            loginButton = driver.find_element(By.XPATH, login_btn_locator)
             loginButton.send_keys(Keys.ENTER)
 
-            # Wait longer on GitHub runner for page to load
-            time.sleep(7)
+            # Wait until the login page stabilizes
+            WebDriverWait(driver, 30).until(
+                lambda d: d.execute_script("return document.readyState") == "complete"
+            )
 
-            # Save screenshot in GitHub Actions workspace
+            # Save screenshot after page fully loaded
             screenshot_path = "/github/workspace/login_debug.png"
+            os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
             driver.save_screenshot(screenshot_path)
             print(f"Screenshot saved at {screenshot_path}")
 
-            # CheckPoint to verify login
-            print("p-2")
+            # Check if login successful
             if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=50):
                 CheckPoint = GetElement(driver, "nI-gNb-icon-img", locator="CLASS")
-                print("p-3")
-
                 if CheckPoint:
                     log_msg("Naukri Login Successful")
                     status = True
-                    return (status, driver)
                 else:
                     log_msg("Unknown Login Error")
-                    return (status, driver)
             else:
                 log_msg("Unknown Login Error")
-                return (status, driver)
 
     except Exception as e:
         catch(e)
     return (status, driver)
+
 
 
 def UpdateProfile(driver):
