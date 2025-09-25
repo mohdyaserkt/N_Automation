@@ -49,4 +49,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: login-screenshot
-          path: /github/workspace/login_debug.png
+          path: login_debug.png
+

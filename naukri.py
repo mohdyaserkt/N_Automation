@@ -242,10 +242,10 @@ def naukriLogin(headless=True):
             )
 
             # Save screenshot after page fully loaded
-            screenshot_path = "/github/workspace/login_debug.png"
-            os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
+            screenshot_path = os.path.join(os.getcwd(), "login_debug.png")  # current folder in GitHub Actions
             driver.save_screenshot(screenshot_path)
             print(f"Screenshot saved at {screenshot_path}")
+
 
             # Check if login successful
             if WaitTillElementPresent(driver, "nI-gNb-icon-img", locator="CLASS", timeout=50):
