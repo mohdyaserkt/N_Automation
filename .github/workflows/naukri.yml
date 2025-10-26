@@ -34,18 +34,7 @@ jobs:
           sudo tailscaled &
           sleep 5
 
-      # 🔑 Authenticate and connect to exit node
-      - name: Authenticate and Connect to Exit Node
-        run: |
-          sudo tailscale up \
-            --authkey=${{ env.TAILSCALE_AUTHKEY }} \
-            --exit-node=${{ env.EXIT_NODE_IP }} \
-            --exit-node-allow-lan-access=true \
-            --accept-dns=true \
-            --hostname=github-naukri-runner
-          echo "Connected to Tailscale via exit node: ${{ env.EXIT_NODE_IP }}"
-          tailscale ip
-          curl ifconfig.me
+      
 
       # 🐍 Set up Python
       - name: Set up Python
@@ -72,6 +61,19 @@ jobs:
       - name: Start X virtual framebuffer
         run: Xvfb :99 -screen 0 1920x1080x24 &
 
+      # 🔑 Authenticate and connect to exit node
+      - name: Authenticate and Connect to Exit Node
+        run: |
+          sudo tailscale up \
+            --authkey=${{ env.TAILSCALE_AUTHKEY }} \
+            --exit-node=${{ env.EXIT_NODE_IP }} \
+            --exit-node-allow-lan-access=true \
+            --accept-dns=true \
+            --hostname=github-naukri-runner
+          echo "Connected to Tailscale via exit node: ${{ env.EXIT_NODE_IP }}"
+          tailscale ip
+          curl ifconfig.me
+          
       # 🧠 Run the Naukri script
       - name: Run Naukri script
         run: python naukri.py
