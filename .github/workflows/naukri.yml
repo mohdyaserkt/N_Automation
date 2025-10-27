@@ -23,62 +23,70 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # 🧩 Install Tailscale CLI and daemon
+      # 🧩 STEP 1: Install Tailscale (quiet)
       - name: Install Tailscale
         run: |
-          curl -fsSL https://tailscale.com/install.sh | sh
+          echo "Installing Tailscale..."
+          curl -fsSL https://tailscale.com/install.sh | sh > /dev/null 2>&1
+          echo "✅ Tailscale installed successfully."
 
-      # 🚀 Start Tailscale daemon manually (since systemd not available)
+      # ⚙️ STEP 2: Start Tailscale Daemon (background)
       - name: Start Tailscale Daemon
         run: |
-          sudo tailscaled &
+          echo "Starting tailscaled quietly in background..."
+          sudo tailscaled > /dev/null 2>&1 &
           sleep 5
+          echo "✅ tailscaled is running."
+
+      # 🔐 STEP 3: Authenticate with Auth Key
+      - name: Authenticate with Tailscale
+        run: |
+          echo "Authenticating Tailscale..."
+          sudo tailscale up --authkey=${{ env.TAILSCALE_AUTHKEY }} > /dev/null 2>&1
+          echo "✅ Tailscale authenticated successfully."
 
       
 
-      # 🐍 Set up Python
+      # 🐍 STEP 5: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      # 📦 Install Python dependencies
+      # 📦 STEP 6: Install Python dependencies
       - name: Install Python dependencies
         run: pip install -r requirements.txt chromedriver-autoinstaller
 
-      # 🌐 Install Google Chrome
+      # 🌐 STEP 7: Install Google Chrome
       - name: Install Google Chrome
         run: |
-          sudo apt-get update
+          sudo apt-get update -qq
           sudo apt-get install -y wget unzip xvfb libxi6 libnss3 libxss1 \
             libgdk-pixbuf2.0-0 libgtk-3-0 fonts-liberation libappindicator3-1 \
             libatk-bridge2.0-0 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
           google-chrome --version
 
-      # 🖥️ Start Virtual Framebuffer for headless Chrome
+      # 🖥️ STEP 8: Start Virtual Framebuffer
       - name: Start X virtual framebuffer
         run: Xvfb :99 -screen 0 1920x1080x24 &
 
-      # 🔑 Authenticate and connect to exit node
-      - name: Authenticate and Connect to Exit Node
+      # 🌍 STEP 4: Connect to Exit Node
+      - name: Connect to Exit Node
         run: |
+          echo "Connecting to exit node..."
           sudo tailscale up \
-            --authkey=${{ env.TAILSCALE_AUTHKEY }} \
-            --exit-node=${{ env.EXIT_NODE_IP }} \
-            --exit-node-allow-lan-access=true \
-            --accept-dns=true \
-            --hostname=github-naukri-runner
-          echo "Connected to Tailscale via exit node: ${{ env.EXIT_NODE_IP }}"
-          tailscale ip
-          curl ifconfig.me
-          
-      # 🧠 Run the Naukri script
+            --exit-node=${{ env.EXIT_NODE_IP }} > /dev/null 2>&1
+          echo "✅ Connected to exit node: ${{ env.EXIT_NODE_IP }}"
+          echo "Tailscale IP: $(tailscale ip)"
+
+
+      # 🧠 STEP 9: Run your Naukri script
       - name: Run Naukri script
         run: python naukri.py
 
-      # 📤 Upload screenshot artifact
+      # 📤 STEP 10: Upload login screenshot
       - name: Upload login screenshot
         uses: actions/upload-artifact@v4
         with:
